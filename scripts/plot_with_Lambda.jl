@@ -5,41 +5,51 @@ using Parameters
 theme(:wong)
 
 
-let (two_j,two_τ,two_λ) = (1,1,-1), cosθ = 0.3
+
+let (two_j,two_τ,two_λ) = (1,1,-1), cosθ = 0.1
     PartialWaveFunctions.wignerd_doublearg(two_j,two_τ,two_λ,cosθ), -sin(acos(cosθ)/2)
 end
+
+
 
 A(σ; m,Γ) = 1/(m^2-σ-1im*m*Γ)
 
 δ(ν,λ) = (ν==λ ? 1 : 0)
 
-H2(two_λ) = (two_λ==1 ? 1.0 : -1.0)
-H1(two_τ) = (two_τ==1 ? 1.0 :  1.0)
+H2(two_λ) = (two_λ==1 ? 0.5 : -1.0)
+H1(two_τ) = (two_τ==1 ? 0.5 :  1.0)
+
 
 # Λ1520 assume that s = 1/2
 O(σ1,cosθ,two_ν,two_λ) = sum(
-        δ(two_ν,two_λ)*H1(two_τ) * A(σ1; m=1.52, Γ=0.017) *
+        δ(two_ν,two_τ)*H1(two_τ) * A(σ1; m=1.52, Γ=0.017) *
         wignerd_doublearg(1,two_τ,two_λ,cosθ)*H2(two_λ)
             for two_τ in [-1,1])
 
+#abs2(O(2,0.3,-1,-1))
+#abs2(O(2,0.3,-1,1))
+#abs2(O(2,0.3,1,-1))
+#abs2(O(2,0.3,1,1))
+
+α(σ1,cosθ) = (sum(abs2(O(σ1,cosθ,1,two_λ)) for two_λ in [-1,1])) - 
+            (sum(abs2(O(σ1,cosθ,-1,two_λ)) for two_λ in [-1,1]))
+
+
 Intensity(σ1,cosθ) = sum(abs2(O(σ1,cosθ,two_ν,two_λ))
     for two_ν in [-1,1], two_λ in [-1,1])
+
+#Intensity(2,0.3)
 
 let
     σ1v = 1.0:0.01:2.8
     cosθv = -1:0.01:1
     calv = [Intensity(σ1,cosθ) for cosθ in cosθv, σ1 in σ1v]
+    length(calv),length(σ1v),length(cosθv)
     heatmap(σ1v, cosθv, calv, title="intensity",
-        xlab="m²(pK) (GeV)", ylab="cosθ")
+       xlab="m²(pK) (GeV)", ylab="cosθ")
 end
 
-struct test
-    x
-    y
-    z
-end
 
-# 
 @with_kw struct ThreeBodySystem
     m0::Float64
     m1::Float64
@@ -77,12 +87,25 @@ end
 
 tbs = ThreeBodySystem(m0=2.46867, m1=0.13957, m2=0.49367, m3=0.938)
 
+#print(Invariants(tbs,σ1=2,σ3=1))
+
+let 
+    σ1v = range((tbs.m2+tbs.m3)^2, (tbs.m0-tbs.m1)^2, length=110)
+ #   print("σ1: ",σ1v)
+    σ3v = range((tbs.m1+tbs.m2)^2, (tbs.m0-tbs.m3)^2, length=100)
+    cosθv = [(Kibble(Invariants(tbs,σ1=σ1,σ3=σ3),tbs)) > 0 ?
+    NaN : cosθ23(Invariants(tbs,σ1=σ1,σ3=σ3),tbs) for σ1 in σ1v, σ3 in σ3v]
+    length(cosθv)
+end
+cosθ23(Invariants(tbs,σ1=10,σ3=0.4),tbs)
+
+
 Intensity_σσ(σ1,σ3) =
     Intensity(σ1,cosθ23(Invariants(tbs,σ1=σ1,σ3=σ3),tbs))
 
-Invariants(tbs;σ1=1.5^2,σ3=1.0)
+α_σσ(σ1,σ3) = α(σ1,cosθ23(Invariants(tbs,σ1=σ1,σ3=σ3),tbs))
 
-# Ξc(0)→π(1)K(2)p(3)
+# Ξb → π [Ξc(0)→π(1)K(2)p(3)]
 # σ1 = (p2+p3)^2 : σ1 > (m2+m3)^2
 # σ1 = (p0-p1)^2 : σ1 < (m0-m1)^2
 Kibble(σs::Invariants,tbs::ThreeBodySystem) = λ(λ(tbs.m0^2,tbs.m1^2,σs.σ1),
@@ -90,12 +113,46 @@ Kibble(σs::Invariants,tbs::ThreeBodySystem) = λ(λ(tbs.m0^2,tbs.m1^2,σs.σ1),
                                                 λ(tbs.m0^2,tbs.m3^2,σs.σ3))
 
 let
-    σ1v = range((tbs.m2+tbs.m3)^2, (tbs.m0-tbs.m1)^2, length=100)
+    σ1v = range((tbs.m2+tbs.m3)^2, (tbs.m0-tbs.m1)^2, length=110)
     σ3v = range((tbs.m1+tbs.m2)^2, (tbs.m0-tbs.m3)^2, length=100)
-    # 
-    calv = [(Kibble(Invariants(tbs,σ1=σ1,σ3=σ3),tbs) > 0 ?
+    #
+    intensity_v = [(Kibble(Invariants(tbs,σ1=σ1,σ3=σ3),tbs) > 0 ?
         NaN :
         Intensity_σσ(σ1,σ3)) for σ3 in σ3v, σ1 in σ1v]
-    heatmap(σ1v, σ3v, calv, title="intensity",
-        xlab="m²(pK) (GeV)", ylab="m²(Kπ) (GeV)")
+    α_v = [(Kibble(Invariants(tbs,σ1=σ1,σ3=σ3),tbs) > 0 ?
+    NaN : α_σσ(σ1,σ3)) for σ3 in σ3v, σ1 in σ1v]
+    #
+    plot(layout = grid(2,2, widths=(0.3,0.7), heights=(0.7,0.3)), size=(800,800))
+    heatmap!(sp=2,σ1v, σ3v, intensity_v, title="intensity",
+        xlab="m²(pK) (GeV)", ylab="m²(Kπ) (GeV)", colorbar=false)
+    calv_noNaN = [isnan(c) ? 0.0 : c for c in intensity_v]
+    plot!(sp=4, σ1v, vcat(sum(calv_noNaN, dims=1)...), link=:x)
+    plot!(sp=1, vcat(sum(calv_noNaN, dims=2)...), σ3v, link=:y)
 end
+
+using QuadGK
+
+# integration
+plojection_σ1(σ1) = quadgk(σ3->
+    (Kibble(Invariants(tbs,σ1=σ1,σ3=σ3),tbs) > 0 ?
+        0 :
+        Intensity_σσ(σ1,σ3)),
+    (tbs.m1+tbs.m2)^2, (tbs.m0-tbs.m3)^2)[1]
+
+plojection_σ1_α(σ1) = quadgk(σ3->
+    (Kibble(Invariants(tbs,σ1=σ1,σ3=σ3),tbs) > 0 ?
+        0 :
+        α_σσ(σ1,σ3)),
+    (tbs.m1+tbs.m2)^2, (tbs.m0-tbs.m3)^2)[1]
+
+
+plojection_σ3(σ3) = quadgk(σ1->
+    (Kibble(Invariants(tbs,σ1=σ1,σ3=σ3),tbs) > 0 ?
+        0 :
+        Intensity_σσ(σ1,σ3)),
+    (tbs.m2+tbs.m3)^2, (tbs.m0-tbs.m1)^2)[1]
+
+plot(σ1->plojection_σ1(σ1), (tbs.m2+tbs.m3)^2, (tbs.m0-tbs.m1)^2)
+plot(σ1->plojection_σ1_α(σ1), (tbs.m2+tbs.m3)^2, (tbs.m0-tbs.m1)^2)
+plot(σ1->plojection_σ1_α(σ1)/plojection_σ1(σ1), (tbs.m2+tbs.m3)^2, (tbs.m0-tbs.m1)^2, ylims=(-1,1),
+        xlabel = "m²(pK)", ylabel = "α")
