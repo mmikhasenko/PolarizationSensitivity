@@ -82,3 +82,9 @@ writedlm(joinpath("data","sims","sample_Kstar=1,1_Lambda=1.1_Delta=3.9im.txt"),
     [getproperty.(gs_large,:σ1) getproperty.(gs_large,:σ3)])
 
 histogram2d(getproperty.(gs_large,:σ1), getproperty.(gs_large,:σ3), bins=50)
+
+# reading
+let
+    M = readdlm(joinpath("data","sims","sample_Kstar=1,1_Lambda=1.1_Delta=3.9im.txt"))
+    [Invariants(tbs.ms,σ1=M[i,1],σ3=M[i,2]) for i in 1:size(M,1)]
+end
