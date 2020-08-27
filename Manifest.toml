@@ -499,10 +499,12 @@ deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[ThreeBodyDecay]]
-deps = ["Cuba", "PartialWaveFunctions", "QuadGK", "StaticArrays"]
-path = "C:\\Users\\mikha\\.julia\\dev\\ThreeBodyDecay"
+deps = ["Cuba", "Parameters", "PartialWaveFunctions", "QuadGK", "RecipesBase", "StaticArrays"]
+git-tree-sha1 = "92fa8c8e2a4584f4a670afbae3c99f3f65196916"
+repo-rev = "v0.4.0"
+repo-url = "https://github.com/mmikhasenko/ThreeBodyDecay.jl.git"
 uuid = "e6563dab-9ca1-5843-bde3-2ccf38d63843"
-version = "0.3.0"
+version = "0.4.0"
 
 [[UUIDs]]
 deps = ["Random", "SHA"]
