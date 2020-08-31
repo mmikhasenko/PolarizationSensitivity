@@ -1,4 +1,7 @@
-name = "polarization_sensitivity"
+name = "PolarizationSensitivity"
+uuid = "1a58ba50-e858-11ea-231e-4b3b4d13161e"
+authors = ["Misha Mikhasenko <mikhail.mikhasenko@gmail.com>", "Vlad Dadu <deduvlad@gmail.com>"]
+version = "0.0.1"
 
 [deps]
 Cuba = "8a292aeb-7a57-582c-b821-06e4c11590b1"
