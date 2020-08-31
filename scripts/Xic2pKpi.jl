@@ -26,9 +26,13 @@ Kst872_pv = decay_chain(1, (s,σ)->BW(σ, 0.89176, 0.05);
     parity = '-', Ps = tbs_parities_pv)
 # Ξc -> K* p
 # -  -> -  + # ever wave -> (-1)^L = - => L = 0
+Kst872_pv.two_ls
+Kst872_pc.two_ls
 Kst872_pv.two_LS
 Kst872_pc.two_LS
+print(Kst872_pc)
 print(Kst872_pv)
+
 
 # chain-2: Delta**
 Δ1232 = decay_chain(2, (s,σ)->BW(σ, 1.232,   0.112);
@@ -70,7 +74,7 @@ function O3(σs,two_λs; pars)
     return x
 end
 
-#rp = randomPoint(tbs) 
+rp = randomPoint(tbs) 
 O1(rp.σs, rp.two_λs; pars = [0.1,0.1,0.3,0.4]) # O_λ^ν(σ1,σ2)
 O2(rp.σs, rp.two_λs; pars = [0.1,0.1,0.3,0.4]) # O_λ^ν(σ1,σ2)
 O3(rp.σs, rp.two_λs; pars = [0.1,0.1,0.3,0.4]) # O_λ^ν(σ1,σ2)
@@ -171,49 +175,55 @@ function α3(σ3;pars=[1, 0.5, 1.1, 3.9im])
 end
 
 
-α1(rp.σs.σ1; pars=[1, 1, 1.1, 3.9im])
+α1(rp.σs.σ1; pars=[1, 1, 0, 0])
 α2(rp.σs.σ2; pars=[1, 1, 1.1, 3.9im])
 α3(rp.σs.σ3; pars=[1, 1, 1.1, 3.9im])
 
-let pars = [1, 1, 0, 0]
-    σ1v = range(lims1(tbs.ms)..., length=30)
+let pars = [1, 1, 1, 1]
+    σ1v = range(lims1(tbs.ms)..., length = 100)
     plot(layout=grid(2,1, heights=(0.7,0.3)), size=(500,600))
     # 
     calv = integrate_over_σ3_as_function_of_σ1.(σ1v; integrand = σs->I1(σs; pars=pars))
-    plot!(sp=1, σ1v, calv,
+    plot!(sp=1, σ1v, calv, legend = false, title = "K* → Kπ resonance",
             xlabel = "m²(Kπ)", ylabel = "Intensity")
     # 
     calv = α1.(σ1v; pars=pars)
     plot!(sp=2, σ1v, calv, ylims=(-1,1),
             xlabel = "m²(Kπ)", ylabel = "α(K*)")
- #   savefig("alfa_Kstar.png")
+    calv = α1.(σ1v; pars=[1,1,0,0])
+    plot!(sp = 2, σ1v, calv,  ylims=(-1,1), legend = false)
+#    savefig("alfa_Kstar.png")
 end
 
 let pars = [1, 1, 1, 1]
-    σ2v = range(lims2(tbs.ms)..., length=30)
+    σ2v = range(lims2(tbs.ms)..., length = 100)
     plot(layout=grid(2,1, heights=(0.7,0.3)), size=(500,600))
     # 
     calv = integrate_over_σ3_as_function_of_σ2.(σ2v; integrand = σs->I2(σs; pars=pars))
-    plot!(sp=1, σ2v, calv,
+    plot!(sp=1, σ2v, calv,legend = false, title = "Δ** → pπ resonance",
             xlabel = "m²(pπ)", ylabel = "Intensity")
     # 
     calv = α2.(σ2v; pars=pars)
-    plot!(sp=2, σ2v, calv, ylims=(-1,1),
+    plot!(sp=2, σ2v, calv, ylims=(-1,1),legend = false,
             xlabel = "m²(pπ)", ylabel = "α(Δ**)")
+    calv = α2.(σ2v; pars=[0,0,1,0])
+    plot!(sp=2, σ2v, calv, ylims=(-1,1), legend = false)
 #    savefig("alfa_Deltastarstar.png")
 end
 
 let pars = [1, 1, 1, 1]
-    σ3v = range(lims3(tbs.ms)..., length=30)
+    σ3v = range(lims3(tbs.ms)..., length = 100)
     plot(layout=grid(2,1, heights=(0.7,0.3)), size=(500,600))
     # 
     calv = integrate_over_σ1_as_function_of_σ3.(σ3v; integrand = σs->I3(σs; pars=pars))
-    plot!(sp=1, σ3v, calv,
+    plot!(sp=1, σ3v, calv,legend = false, title = "Λ* → pK resonance",
             xlabel = "m²(pK)", ylabel = "Intensity")
     # 
     calv = α3.(σ3v; pars=pars)
     plot!(sp=2, σ3v, calv, ylims=(-1,1),
             xlabel = "m²(pK)", ylabel = "α(Λ*)")
+    calv = α3.(σ3v; pars=[0,0,0,1])
+    plot!(sp=2, σ3v, calv, ylims=(-1,1), legend = false)
 #    savefig("alfa_Lambdastar.png")
 end
 
