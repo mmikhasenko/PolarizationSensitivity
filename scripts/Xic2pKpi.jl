@@ -116,19 +116,19 @@ end
 # 
 #
 integrate_over_σ3_as_function_of_σ1(σ1; integrand) = quadgk(σ3->
-    (Kibble(Invariants(tbs.ms,σ1=σ1,σ3=σ3),tbs.ms) > 0 ?
+    (Kibble(Invariants(tbs.ms,σ1=σ1,σ3=σ3),tbs.ms^2) > 0 ?
         0 :
         integrand(Invariants(tbs.ms,σ1=σ1,σ3=σ3))),
     lims3(tbs.ms)...)[1]
 
 integrate_over_σ3_as_function_of_σ2(σ2; integrand) = quadgk(σ3->
-    (Kibble(Invariants(tbs.ms,σ2=σ2,σ3=σ3),tbs.ms) > 0 ?
+    (Kibble(Invariants(tbs.ms,σ2=σ2,σ3=σ3),tbs.ms^2) > 0 ?
         0 :
         integrand(Invariants(tbs.ms,σ2=σ2,σ3=σ3))),
     lims3(tbs.ms)...)[1]
 
 integrate_over_σ1_as_function_of_σ3(σ3; integrand) = quadgk(σ1->
-    (Kibble(Invariants(tbs.ms,σ1=σ1,σ3=σ3),tbs.ms) > 0 ?
+    (Kibble(Invariants(tbs.ms,σ1=σ1,σ3=σ3),tbs.ms^2) > 0 ?
         0 :
         integrand(Invariants(tbs.ms,σ3=σ3,σ1=σ1))),
     lims1(tbs.ms)...)[1]
@@ -247,7 +247,7 @@ wignerd_doublearg(two_j,two_m1,two_m2,cosθhat12) # will work fine
 wignerd_doublearg(two_j,two_m1,two_m2,cos(-acos(cosθhat21))) # incorrect
 
 wignerd_doublearg(two_j,two_m1,two_m2,cosθhat21) = (-1)^{m1-m2} * 
-    wignerd_doublearg(two_j,two_m1,two_m2,cosθhat12)
+            wignerd_doublearg(two_j,two_m1,two_m2,cosθhat12)
 
 # α1 => chain 1 => d(cosθhat_1(3)) = (-1)^{...} d(cosθhat31)
 # α2 => chain 2 => d(cosθhat_2(3)) = d(cosθhat23)
