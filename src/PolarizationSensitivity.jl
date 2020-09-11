@@ -3,6 +3,7 @@ module PolarizationSensitivity
     using ThreeBodyDecay
     using ForwardDiff
     using Parameters
+    using Optim
 
     export tbs_Ξc2pKπ
     export ρ1
@@ -13,10 +14,10 @@ module PolarizationSensitivity
     export Λ1520_pc, Λ1520_pv
     include("isobars.jl")
 
-    export delta
+    export delta, relative_phase, contributions
     include("utils.jl")
 
-    export intensity, interference
+    export intensity, interference, O
     include("observables.jl")
 
     export ellh, μ 

@@ -19,6 +19,7 @@ function fit_data!(settings)
     ldata = settings["data"]
     _Natt = settings["Natt"]
     H = settings["H_matrix"]
+    Np = 4
     # 
     f(x) = ellh(x;data=ldata, H=H)
     f′ = get_complex_derivative(f)
@@ -31,7 +32,7 @@ function fit_data!(settings)
     frs = [let
         # Gen init params (in [0,max] range ) with random phase 
         init_pars = rand(Np).*ranges.*(cis.(rand(Np)*2π))
-        init_pars ./= sqrt(μ(init_pars; H=H)/length(data))
+        init_pars ./= sqrt(μ(init_pars; H=H)/length(ldata))
         Optim.optimize(f, f′!, init_pars, BFGS(),
                     Optim.Options(show_trace = settings["show_trace"]))
     end for e in 1:_Natt]

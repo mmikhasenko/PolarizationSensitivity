@@ -12,7 +12,7 @@ tbs = tbs_Ξc2pKπ
 isobars = (Kst872_pc, Kst872_pv, Λ1520_pc, Δ1232_pc)
 Np = length(isobars)
 
-import PolarizationSensitivity: intensity, interference, ellh
+import PolarizationSensitivity: intensity, interference, ellh, fit_data!
 intensity(σs; pars) = intensity(σs, isobars; pars=pars)
 interference(σs; i,j) = interference(σs, isobars; i=i, j=j)
 ellh(pars;data,H) = ellh(pars,isobars;data=data,H=H)
@@ -21,16 +21,16 @@ ellh(pars;data,H) = ellh(pars,isobars;data=data,H=H)
 Φ0 = quadgk(σ1->ρ1(σ1; tbs.ms), lims1(tbs.ms)...)[1]
 
 #Calculate all matrix elements Interf_ij
-const s0 = flatDalitzPlotSample(tbs.ms; Nev = 10)
+const s0 = flatDalitzPlotSample(tbs.ms; Nev = 10000)
 H = Matrix{Complex{Float64}}(undef,Np,Np)
-for i in 1:Np
+@time for i in 1:Np
     for j in 1:Np
         H[i,j] = (Φ0/length(s0))*sum(interference.(s0; i=i,j=j))
     end
 end
 
 plot(heatmap(log.(abs.(real.(H)))),
-     heatmap(imag.(H)))
+    heatmap(imag.(H)))
 
 # reading
 data = let Nreduced = 100
@@ -43,6 +43,7 @@ const genpars = [1, 1, 1.1, 3.9]
 const genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data))
 @assert μ(genpars′; H=H) ≈ length(data)
 
+
 let Np = 4
     plot()
     for j in 1:4
@@ -52,7 +53,7 @@ let Np = 4
         gen_pars = [1 + 0im, 1, 1.1, 3.9]
         for i in 1:100
             phase = (i-1)/99*2π - π
-            modified_pars = copy(gen_pars) 
+            modified_pars = copy(gen_pars)
             modified_pars[j] *= cis(phase)
             append!(ph,phase)
             append!(e,ellh(modified_pars; data=data, H=H))
@@ -62,16 +63,18 @@ let Np = 4
     plot!()
 end
 
+
 settings = Dict(
     "H_matrix" => H,
     "data"=> data,
-    "Natt"=>3,
+    "Natt"=>10,
     "show_trace"=>false)
 
-fit_data!(settings);
+
+@time fit_data!(settings);
 
 using JLD2
-@save joinpath("data","exp_pro","fits_Np=4_Natt=3_pseudodata.jld2") settings
+@save joinpath("data","fits3_Np=4_Natt=10_pseudodata.jld2") settings
 
 # Optim.minimizer(settings["fit_results"][1])
 
