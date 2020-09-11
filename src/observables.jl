@@ -10,7 +10,14 @@ interference(σs, isobars; i,j) = sum(
 intensity(σs, isobars; pars) = sum(abs2, O(σs,
     ThreeBodySpins(two_h0=two_ν, two_h1=two_λ, two_h2=0, two_h3=0),
     pars=pars, isobars=isobars) for two_λ in [-1,1], two_ν in [-1,1])
-#
 
-# TODO:
-# α(...)
+I1_assym(σs, two_ν; pars) = sum(abs2(O(σs,ThreeBodySpins(two_h0=two_ν, two_h1=two_λ, two_h2=0, two_h3=0);
+   pars=pars, isobars = isobars)) for two_λ in [-1,1])
+
+
+function α1_avg(pars; sample)
+    N⁺ = (Φ0/length(sample))*sum(I1_assym.(sample, 1; pars=pars))
+    N⁻ = (Φ0/length(sample))*sum(I1_assym.(sample, -1; pars=pars))
+    return (N⁺ - N⁻) / (N⁺ + N⁻)
+end
+
