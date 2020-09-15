@@ -11,13 +11,28 @@ intensity(σs, isobars; pars) = sum(abs2, O(σs,
     ThreeBodySpins(two_h0=two_ν, two_h1=two_λ, two_h2=0, two_h3=0),
     pars=pars, isobars=isobars) for two_λ in [-1,1], two_ν in [-1,1])
 
-I1_assym(σs, two_ν; pars) = sum(abs2(O(σs,ThreeBodySpins(two_h0=two_ν, two_h1=two_λ, two_h2=0, two_h3=0);
-   pars=pars, isobars = isobars)) for two_λ in [-1,1])
 
-
-function α1_avg(pars; sample)
-    N⁺ = (Φ0/length(sample))*sum(I1_assym.(sample, 1; pars=pars))
-    N⁻ = (Φ0/length(sample))*sum(I1_assym.(sample, -1; pars=pars))
-    return (N⁺ - N⁻) / (N⁺ + N⁻)
+parity_map = [1,0,1,1]
+function μ_pc(pars; H)
+        μ = 0
+        for i in 1:length(pars), 
+            j in 1:length(pars)
+            if parity_map[i]==1 && parity_map[j]==1
+                μ += pars'[i]*H[i,j]*pars[j]
+            end
+        end        
+        return μ
 end
+    
+function μ_pv(pars; H)
+    μ = 0
+    for i in 1:length(pars), 
+        j in 1:length(pars)
+        if parity_map[i]==0 && parity_map[j]==0
+            μ += pars'[i]*H[i,j]*pars[j]
+        end
+    end        
+    return μ
+end
+
 

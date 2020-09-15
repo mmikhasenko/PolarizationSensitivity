@@ -17,18 +17,6 @@ intensity(σs; pars) = intensity(σs, isobars; pars=pars)
 interference(σs; i,j) = interference(σs, isobars; i=i, j=j)
 ellh(pars;data,H) = ellh(pars,isobars;data=data,H=H)
 
-#Calculate integrals
-Φ0 = quadgk(σ1->ρ1(σ1; tbs.ms), lims1(tbs.ms)...)[1]
-
-#Calculate all matrix elements Interf_ij
-const s0 = flatDalitzPlotSample(tbs.ms; Nev = 10000)
-H = Matrix{Complex{Float64}}(undef,Np,Np)
-@time for i in 1:Np
-    for j in 1:Np
-        H[i,j] = (Φ0/length(s0))*sum(interference.(s0; i=i,j=j))
-    end
-end
-
 plot(heatmap(log.(abs.(real.(H)))),
     heatmap(imag.(H)))
 
@@ -71,10 +59,11 @@ settings = Dict(
     "show_trace"=>false)
 
 
+
 @time fit_data!(settings);
 
 using JLD2
-@save joinpath("data","fits3_Np=4_Natt=10_pseudodata.jld2") settings
+@save joinpath("data","fits4_Np=4_Natt=100_pseudodata.jld2") settings
 
 # Optim.minimizer(settings["fit_results"][1])
 
