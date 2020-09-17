@@ -4,6 +4,8 @@ module PolarizationSensitivity
     using ForwardDiff
     using Parameters
     using Optim
+    using QuadGK
+    using PartialWaveFunctions
 
     export tbs_Ξc2pKπ
     export ρ1
@@ -18,6 +20,7 @@ module PolarizationSensitivity
     include("utils.jl")
 
     export intensity, interference, O, μ_pc, μ_pv
+    export α1_avg,α3_avg,α2_avg
     include("observables.jl")
 
     export ellh, μ 
