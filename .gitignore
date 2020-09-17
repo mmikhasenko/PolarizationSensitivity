@@ -3,3 +3,4 @@
 LcFits
 data/fits*.jld2
 data/sims/sample*.txt
+.vscode
