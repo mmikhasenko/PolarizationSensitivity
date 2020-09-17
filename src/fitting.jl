@@ -19,7 +19,7 @@ function fit_data!(settings)
     ldata = settings["data"]
     _Natt = settings["Natt"]
     H = settings["H_matrix"]
-    Np = 4
+    Np = size(H,1)
     # 
     f(x) = ellh(x;data=ldata, H=H)
     f′ = get_complex_derivative(f)
