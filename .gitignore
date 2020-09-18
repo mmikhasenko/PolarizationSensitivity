@@ -2,5 +2,5 @@
 
 LcFits
 data/fits*.jld2
-data/sims/sample*.txt
+data/sims/sample_Kstar=1,1*.txt
 .vscode
