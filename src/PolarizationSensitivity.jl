@@ -19,8 +19,8 @@ module PolarizationSensitivity
     export delta, relative_phase, contributions
     include("utils.jl")
 
-    export intensity, interference, O, μ_pc, μ_pv
-    export α1_avg,α3_avg,α2_avg
+    export intensity, interference, O, μ_pc, μ_pv, Φ0
+    export α_avg, I1_assym, I2_assym, I3_assym
     include("observables.jl")
 
     export ellh, μ 

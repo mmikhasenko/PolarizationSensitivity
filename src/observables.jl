@@ -37,21 +37,8 @@ I3_assym(σs, two_ν; pars, isobars) = sum(abs2,
         pars=pars, isobars = isobars) for two_ν′ in [-1,1])
     for two_λ in [-1,1])
 
-#Define α with I_assym function as argument
-function α2_avg(pars; isobars,sample)
-    N⁺ = (Φ0/length(sample))*sum(I2_assym.(sample, 1; pars=pars, isobars = isobars))
-    N⁻ = (Φ0/length(sample))*sum(I2_assym.(sample, -1; pars=pars, isobars = isobars))
-    return (N⁺ - N⁻) / (N⁺ + N⁻)
-end
-
-function α3_avg(pars; isobars,sample)
-    N⁺ = (Φ0/length(sample))*sum(I3_assym.(sample, 1; pars=pars, isobars = isobars))
-    N⁻ = (Φ0/length(sample))*sum(I3_assym.(sample, -1; pars=pars, isobars = isobars))
-    return (N⁺ - N⁻) / (N⁺ + N⁻)
-end
-
-function α1_avg(pars; isobars, sample)
-    N⁺ = (Φ0/length(sample))*sum(I1_assym.(sample, 1; pars=pars, isobars = isobars))
-    N⁻ = (Φ0/length(sample))*sum(I1_assym.(sample, -1; pars=pars, isobars = isobars))
+function α_avg(I_assym, pars; isobars, sample)
+    N⁺ = (Φ0/length(sample))*sum(I_assym.(sample, 1; pars=pars, isobars = isobars))
+    N⁻ = (Φ0/length(sample))*sum(I_assym.(sample, -1; pars=pars, isobars = isobars))
     return (N⁺ - N⁻) / (N⁺ + N⁻)
 end

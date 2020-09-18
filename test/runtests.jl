@@ -24,11 +24,11 @@ end
     isobars = (Kst872_pc, Kst872_pv)
     sample = flatDalitzPlotSample(tbs.ms; Nev = 10)
     pars = [1,1]
-    α1 =  α1_avg(pars; isobars = isobars, sample = sample)
+    α1 =  α_avg(I1_assym, pars; isobars = isobars, sample = sample)
     @test -1 <= α1 <= 1
-    α2 =  α2_avg(pars; isobars = isobars, sample = sample)
+    α2 =  α_avg(I2_assym,pars; isobars = isobars, sample = sample)
     @test -1 <= α2 <= 1
-    α3 =  α3_avg(pars; isobars = isobars, sample = sample)
+    α3 =  α_avg(I3_assym,pars; isobars = isobars, sample = sample)
     @test -1 <= α3 <= 1 
 end
 
