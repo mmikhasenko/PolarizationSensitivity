@@ -20,7 +20,7 @@ tbs = tbs_Ξc2pKπ
 end
 
 
-@testset "#Test that αs return a value between -1,1" begin
+@testset "αs return a value between -1,1" begin
     isobars = (Kst872_pc, Kst872_pv)
     sample = flatDalitzPlotSample(tbs.ms; Nev = 10)
     pars = [1,1]
