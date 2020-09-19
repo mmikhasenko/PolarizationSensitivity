@@ -7,13 +7,14 @@ using QuadGK
 using DelimitedFiles
 using LinearAlgebra
 using Statistics
+using JLD2
 #
 #
-#  
 const tbs = tbs_Ξc2pKπ
 #
-const isobars = (Kst872_pc, Kst872_pv, Δ1232_pc, Δ1232_pv,Λ1520_pc, Λ1520_pv)
+const isobars = (Kst872_pc, Kst872_pv, Δ1232_pc, Δ1232_pv, Λ1520_pc, Λ1520_pv)
 const Np = length(isobars)
+#
 #
 const datafile = joinpath("data","sims","sample_Kstar=1.3,1-1im_Delta=1.2-0.5im,2+0.3im_Lambda=2-0.6im,2+1im.txt")
 const data = let Nreduced = 1000
@@ -22,30 +23,26 @@ const data = let Nreduced = 1000
 end
 
 const genpars = parse_values_from_datafile_name(datafile, Np)
+const genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data)) # normalized genpars
+@assert μ(genpars′; H=H) ≈ length(data)
 
-#Calculate all matrix elements Interf_ij
-const H = integral_matrix_using_MC(isobars[1:1]; Nev=10_000)
-
-#Plot matrix
-plot(heatmap(log.(abs.(real.(H)))),
-    heatmap(imag.(H)))
+# Calculate all matrix elements Interf_ij
+# const H = integral_matrix_using_MC(isobars[1:1]; Nev=10_000)
+const H = JLD2.read(JLD2.jldopen(joinpath("data", "integral_matrix_Np=6.jld2")), "settings")["H_matrix"]
 
 settings = Dict(
     "H_matrix" => H,
     "data" => data,
     "Natt" => 1,
-    "show_trace" => true,
+    "show_trace" => false,
     "llh_tolerance" => 1e-4)
 
-#Calculate normalized genpars
-const genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data))
-@assert μ(genpars′; H=H) ≈ length(data)
+@time ellh(genpars′, isobars; data=data, H=H)
 
-#Perform fit
+# Perform fit
 @time fit_data!(settings, isobars);
 
-#Save fit settings to file
-using JLD2
-@save joinpath("data","fit_Np=6_Natt=10_pseudodata.jld2") settings
-
-
+# Save fit settings to file
+let Natt = settings["Natt"], Ndata = length(data)
+    @save joinpath("data","fit_Ndata=$(Ndata)_Np=$(Np)_Natt=$(Natt)_pseudodata.jld2") settings
+end
