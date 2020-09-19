@@ -22,13 +22,13 @@ const data = let Nreduced = 1000
     [Invariants(tbs.ms,σ1=M[i,1],σ3=M[i,2]) for i in 1:size(M,1)][1:Nreduced]
 end
 
-const genpars = parse_values_from_datafile_name(datafile, Np)
-const genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data)) # normalized genpars
-@assert μ(genpars′; H=H) ≈ length(data)
-
 # Calculate all matrix elements Interf_ij
 # const H = integral_matrix_using_MC(isobars[1:1]; Nev=10_000)
 const H = JLD2.read(JLD2.jldopen(joinpath("data", "integral_matrix_Np=6.jld2")), "settings")["H_matrix"]
+
+const genpars = parse_values_from_datafile_name(datafile, Np)
+const genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data)) # normalized genpars
+@assert μ(genpars′; H=H) ≈ length(data)
 
 settings = Dict(
     "H_matrix" => H,
