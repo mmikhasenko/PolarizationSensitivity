@@ -15,15 +15,15 @@ const tbs = tbs_Ξc2pKπ
 const isobars = (Kst872_pc, Kst872_pv, Δ1232_pc, Δ1232_pv, Λ1520_pc, Λ1520_pv)
 const Np = length(isobars)
 #
-const datafile = joinpath("data","sims","sample_Kstar=1.3,1-1im_Delta=1.2-0.5im,2+0.3im_Lambda=2-0.6im,2+1im.txt")
-const data = let Nreduced = 100
+const datafile = joinpath("data","sims","sample_Kstar=1.3,1-1im_Delta=2-0.6im,2+1im_Lambda=1.2-0.5im,2+0.3im.txt")
+const data = let Nreduced = 1000
     M = readdlm(datafile)
     [Invariants(tbs.ms,σ1=M[i,1],σ3=M[i,2]) for i in 1:size(M,1)][1:Nreduced]
 end
 const genpars = parse_values_from_datafile_name(datafile, Np)
 const genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data))
 
-const H = JLD2.read(JLD2.jldopen(joinpath("data", "fit_Np=6_Natt=10_pseudodata.jld2")), "settings")["H_matrix"]
+const H = JLD2.read(JLD2.jldopen(joinpath("data", "integral_matrix_Np=6.jld2")), "settings")["H_matrix"]
 
 function profile_llh(pars)
     pars′ = pars./sqrt(μ(pars; H=H)/length(data))
