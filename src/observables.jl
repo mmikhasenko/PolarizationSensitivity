@@ -1,10 +1,10 @@
 # 
-O(σs,two_λs; pars, isobars) = sum(c*amplitude(σs,two_λs,dc)
+O(σs, two_λs; pars, isobars) = sum(c*amplitude(σs,two_λs,dc)
     for (c, dc) in zip(pars, isobars))
 #
 interference(σs, isobars; i,j) = sum(
-    conj(O(σs,two_λs; pars = delta(i;N=length(isobars)), isobars=isobars))*
-         O(σs,two_λs;pars = delta(j;N=length(isobars)), isobars=isobars) 
+    conj(O(σs, two_λs; pars = delta(i; N=length(isobars)), isobars=isobars))*
+         O(σs, two_λs; pars = delta(j; N=length(isobars)), isobars=isobars) 
     for two_λs in itr(tbs_Ξc2pKπ.two_js))
 #
 intensity(σs, isobars; pars) = sum(abs2, O(σs,

@@ -6,6 +6,7 @@ module PolarizationSensitivity
     using Optim
     using QuadGK
     using PartialWaveFunctions
+    using LinearAlgebra
 
     export tbs_Ξc2pKπ
     export ρ1
@@ -26,6 +27,7 @@ module PolarizationSensitivity
     export ellh, μ 
     export get_complex_derivative
     export fit_data!
+    export integral_matrix_using_MC
     include("fitting.jl")
 
     export parse_values_from_datafile_name

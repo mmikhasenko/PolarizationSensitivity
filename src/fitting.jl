@@ -38,3 +38,16 @@ function fit_data!(settings)
     end for e in 1:_Natt]
     settings["fit_results"] = frs
 end
+
+function integral_matrix_using_MC(isobars; Nev="size of the MC sample")
+    Np = length(isobars)
+    ms = first(isobars).tbs.ms
+    s0 = flatDalitzPlotSample(ms; Nev = Nev)
+    # 
+    f(σs,i,j) = interference(σs, isobars; i=i,j=j)
+    # 
+    H = Hermitian([i>j ? 0.0im :
+        (Φ0/length(s0))*sum(f.(s0, i, j))
+            for i in 1:Np, j in 1:Np])
+    return H
+end

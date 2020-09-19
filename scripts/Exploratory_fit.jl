@@ -26,13 +26,7 @@ end
 const genpars = parse_values_from_datafile_name(datafile, Np)
 
 #Calculate all matrix elements Interf_ij
-const s0 = flatDalitzPlotSample(tbs.ms; Nev = 10000)
-H = Matrix{Complex{Float64}}(undef,Np,Np)
-@time for i in 1:Np
-    for j in 1:Np
-        H[i,j] = (Φ0/length(s0))*sum(interference.(s0; i=i,j=j))
-    end
-end
+const H = integral_matrix_using_MC(isobars[1:1]; Nev=10_000)
 
 #Plot matrix
 plot(heatmap(log.(abs.(real.(H)))),

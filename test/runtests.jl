@@ -2,7 +2,7 @@ using Test
 using PolarizationSensitivity
 using PolarizationSensitivity.ThreeBodyDecay
 using QuadGK
-
+using LinearAlgebra
 
 tbs = tbs_Ξc2pKπ
 
@@ -42,12 +42,19 @@ end
 end
 
 @testset "inteference and intensity" begin
-    isobars = (decay_chain(k=3,Xlineshape=(σ,s)->1.0,
-        two_s=1, two_LS=(0,1), two_ls=(0,1),
-        tbs=tbs),
-        )
+    isobars = (Kst872_pc, Kst872_pv)
     dpp = randomPoint(tbs)
     I11 = interference(dpp.σs, isobars; i=1,j=1)
     I1 = intensity(dpp.σs, isobars; pars=[1.0])
     @test I11 ≈ I1
+end
+
+@testset "integral matrix" begin
+    isobars = (decay_chain(k=3, Xlineshape=(σ,s)->1.0,
+        two_s=1, two_LS=(0,1), two_ls=(0,1),
+        tbs=tbs),
+        )
+    H = integral_matrix_using_MC(isobars; Nev=10_000)
+    @test size(H) == (length(isobars),length(isobars))
+    @test real.(diag(H)) ≈ diag(H)
 end
