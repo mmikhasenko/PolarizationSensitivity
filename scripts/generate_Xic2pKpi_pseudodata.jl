@@ -14,7 +14,10 @@ intensity(σs; pars) = intensity(σs, isobars; pars=pars)
 tbs = tbs_Ξc2pKπ
 const isobars = (Kst872_pc, Kst872_pv, Δ1232_pc, Δ1232_pv, Λ1520_pc, Λ1520_pv)
 const genpars = [1.3, 1 - 1im, 2.0 - 0.6im, 2 + 1im, 1.2 - 0.5im, 2 + 0.3im]
-#Dalitz plot for genpars
+const datafime = joinpath("data","sims",
+    "sample_Kstar=1.3,1-1im_Delta=2-0.6im,2+1im_Lambda=1.2-0.5im,2+0.3im.txt")
+
+# Dalitz plot for genpars
 let
     σ3v = range(lims3(tbs.ms)..., length=100)
     σ1v = range(lims1(tbs.ms)..., length=100)
@@ -41,7 +44,7 @@ end
 
 const gs_large = generate_sample(σs->intensity(σs; pars=genpars); Nev=100_000);
 
-writedlm(joinpath("data","sims","sample_Kstar=1.3,1-1im_Delta=2-0.6im,2+1im_Lambda=1.2-0.5im,2+0.3im.txt"),
+writedlm(datafile,
     [getproperty.(gs_large,:σ1) getproperty.(gs_large,:σ3)])
 
 # plot Dalitz of data
