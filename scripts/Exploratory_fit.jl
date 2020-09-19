@@ -15,8 +15,6 @@ const tbs = tbs_Ξc2pKπ
 const isobars = (Kst872_pc, Kst872_pv, Δ1232_pc, Δ1232_pv,Λ1520_pc, Λ1520_pv)
 const Np = length(isobars)
 #
-plot(tbs.ms, σs->interference(σs, isobars; i=1, j=1))
-#
 const datafile = joinpath("data","sims","sample_Kstar=1.3,1-1im_Delta=1.2-0.5im,2+0.3im_Lambda=2-0.6im,2+1im.txt")
 const data = let Nreduced = 1000
     M = readdlm(datafile)
