@@ -28,4 +28,7 @@ module PolarizationSensitivity
     export fit_data!
     include("fitting.jl")
 
+    export parse_values_from_datafile_name
+    include("IO.jl")
+    
 end
