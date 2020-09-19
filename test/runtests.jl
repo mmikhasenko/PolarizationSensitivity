@@ -41,3 +41,13 @@ end
     @test genpars ≈ [1.3, 1-1im, 2-0.6im, 2+1im, 1.2-0.5im,2+0.3im]
 end
 
+@testset "inteference and intensity" begin
+    isobars = (decay_chain(k=3,Xlineshape=(σ,s)->1.0,
+        two_s=1, two_LS=(0,1), two_ls=(0,1),
+        tbs=tbs),
+        )
+    dpp = randomPoint(tbs)
+    I11 = interference(dpp.σs, isobars; i=1,j=1)
+    I1 = intensity(dpp.σs, isobars; pars=[1.0])
+    @test I11 ≈ I1
+end
