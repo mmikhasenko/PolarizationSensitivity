@@ -15,13 +15,14 @@ function get_inplace_derivative(f)
     return f′!
 end
 
-function fit_data!(settings)
+function fit_data!(settings, isobars)
     ldata = settings["data"]
     _Natt = settings["Natt"]
     H = settings["H_matrix"]
+    f_tol = haskey(settings, "llh_tolerance") ? settings["llh_tolerance"] : 0.0
     Np = size(H,1)
     # 
-    f(x) = ellh(x;data=ldata, H=H)
+    f(x) = ellh(x, isobars;data=ldata, H=H)
     f′ = get_complex_derivative(f)
     f′!(stor,x) = copyto!(stor, f′(x))
     # 
@@ -34,7 +35,8 @@ function fit_data!(settings)
         init_pars = rand(Np).*ranges.*(cis.(rand(Np)*2π))
         init_pars ./= sqrt(μ(init_pars; H=H)/length(ldata))
         Optim.optimize(f, f′!, init_pars, BFGS(),
-                    Optim.Options(show_trace = settings["show_trace"]))
+                    Optim.Options(show_trace = settings["show_trace"],
+                                  f_tol=f_tol))
     end for e in 1:_Natt]
     settings["fit_results"] = frs
 end

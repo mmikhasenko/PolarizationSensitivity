@@ -37,13 +37,14 @@ settings = Dict(
     "data" => data,
     "Natt" => 1,
     "show_trace" => true,
+    "llh_tolerance" => 1e-4)
 
 #Calculate normalized genpars
 const genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data))
 @assert μ(genpars′; H=H) ≈ length(data)
 
 #Perform fit
-@time fit_data!(settings);
+@time fit_data!(settings, isobars);
 
 #Save fit settings to file
 using JLD2
