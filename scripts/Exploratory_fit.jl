@@ -39,21 +39,23 @@ settings = Dict(
 
 @time ellh(genpars′, isobars; data=data, H=H)
 
-# # Perform fit
-# @time fit_data!(settings, isobars);
+# Perform fit
+@time fit_data!(settings, isobars);
 
-# # Save fit settings to file
-# let Natt = settings["Natt"], Ndata = length(data)
-#     @save joinpath("data","fit_Ndata=$(Ndata)_Np=$(Np)_Natt=$(Natt)_pseudodata.jld2") settings
-# end
-
-# save every hour-cycle
-for hcycle = 1:10
-    println("starting $(hcycle) hcycle")
-    # 
-    fit_data!(settings, isobars);
+# Save fit settings to file
+let Ndata = length(data)
     Natt = settings["Natt"]
-    Ndata = length(data)
-    #
-    @save joinpath("data","fit_Ndata=$(Ndata)_Np=$(Np)_Natt=$(Natt)_hcycle=$(hcycle)_pseudodata.jld2") settings
+    ftol = settings["llh_tolerance"]
+    @save joinpath("data","fit_Ndata=$(Ndata)_Np=$(Np)_Natt=$(Natt)_ftol=$(ftol)_pseudodata.jld2") settings
 end
+
+# # save every hour-cycle
+# for hcycle = 1:10
+#     println("starting $(hcycle) hcycle")
+#     # 
+#     fit_data!(settings, isobars);
+#     Natt = settings["Natt"]
+#     Ndata = length(data)
+#     #
+#     @save joinpath("data","fit_Ndata=$(Ndata)_Np=$(Np)_Natt=$(Natt)_hcycle=$(hcycle)_pseudodata.jld2") settings
+# end
