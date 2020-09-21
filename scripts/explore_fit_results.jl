@@ -1,10 +1,14 @@
 using Plots
+theme(:wong)
+
 using Optim
 using Statistics
 
 using TypedTables
 
 using PolarizationSensitivity
+import PolarizationSensitivity: intensity, interference, ellh
+# 
 using ThreeBodyDecay
 using QuadGK
 using DelimitedFiles
@@ -12,26 +16,38 @@ using PartialWaveFunctions
 
 using JLD2
 
+# I. build model
 # 
 tbs = tbs_Ξc2pKπ
-# 
+#
 const isobars = (Kst872_pc, Kst872_pv, Δ1232_pc, Δ1232_pv,Λ1520_pc, Λ1520_pv)
 const parity_map = [1,0,1,0,1,0]
-
-
-Np = length(isobars)
-
-import PolarizationSensitivity: intensity, interference, ellh
+const Np = length(isobars)
 intensity(σs; pars) = intensity(σs, isobars; pars=pars)
 interference(σs; i,j) = interference(σs, isobars; i=i, j=j)
 ellh(pars;data,H) = ellh(pars,isobars;data=data,H=H)
 
-#Load fit settings
-@load joinpath("data","fits_Np=6_Natt=10_pseudodata.jld2") settings
+# II. load fitted data
+const Ndata = 1000
+# 
+datafile = joinpath("data","sims","sample_Kstar=1.3,1-1im_Delta=2-0.6im,2+1im_Lambda=1.2-0.5im,2+0.3im.txt")
+data = let Nreduced = Ndata
+    M = readdlm(datafile)
+    [Invariants(tbs.ms,σ1=M[i,1],σ3=M[i,2]) for i in 1:size(M,1)][1:Nreduced]
+end
+genpars = parse_values_from_datafile_name(datafile, Np)
+genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data)) # normalized genpars
+@assert μ(genpars′; H=H) ≈ length(data)
 
+# III. Load fit results
+@load joinpath("data","fit_Ndata=1000_Np=6_Natt=1000_pseudodata.jld2") settings
 H = settings["H_matrix"]
-
 Optim.minimizer(settings["fit_results"][1])
+let
+    histogram(Optim.minimum.(settings["fit_results"]), bins=100, lab="fits")
+    vline!([ellh(genpars′; data=data,H=H)], lab="generated", l=(3,:black))
+end
+savefig(joinpath("plots","ellh_fits.pdf"))
 
 tfr = Table(
     [(st = Optim.converged(fr), min = Optim.minimum(fr), pars = Optim.minimizer(fr))
@@ -39,31 +55,44 @@ tfr = Table(
 print(tfr)
 print(tfr.pars[1])
 
+# IV. Explore fit resuts
 
-#1.) Sanity check
-histogram(μ.(tfr.pars; H = H), bins = range(90,110,length = 20), title = "Histogram of μ (sanity check)")
-savefig("muhisto.pdf")
+# 1.) Sanity check
+histogram(μ.(tfr.pars; H = H), bins = range(900,1100,length = 100), title = "Histogram of μ (sanity check)")
+# savefig("muhisto.pdf")
 
-#2.) Fraction of every isobar 
+# 2.) Fraction of every isobar 
 let Np = length(isobars)
-    titles = ["K*_pc","K*_pv","Δ**_pc","Δ**_pv", "Λ**_pc", "Λ**_pv"]
-    plot( title = "Fractions of isobars")
+    layout = @layout [grid(Np,1){0.7w} grid(div(Np,2),1)]
+    plot(layout=layout, size=(800,100*6))
+    #
+    titles = ["K* PC","K* PV","Δ** PC","Δ** PV", "Λ** PC", "Λ** PV"]
+    bins = range(0,Ndata,length = 100)
     for i in 1:6
-
-        bins = range(0,100,length = 50)
-
         calv = real(getindex.(contributions.(tfr.pars; H=H),i,i))
-
-        histogram!(calv, lab =  "$(titles[i]) mean = $(round(mean(calv); digits = 2))",
+        histogram!(sp=i, calv, lab =  "$(titles[i]) ($(round(mean(calv); digits = 2)))",
             bins = bins, seriescolor = i)
         exp_cal = real(getindex(contributions(genpars′; H=H),i,i))
-        vline!([exp_cal], lab="$(round(exp_cal; digits =2)) expected", seriescolor = i)
+        vline!(sp=i, [exp_cal], lab="exp: ($(round(exp_cal; digits =2)))", seriescolor = i)
     end
-    savefig("Fractions_isobars.pdf")
+    # 
+    titles = ["K* PC+PV","Δ** PC+PV","Λ** PC+PV"]
+    bins = range(0,Ndata,length = 50)
+    for i in 1:3
+        calv = real(getindex.(contributions.(tfr.pars; H=H),2i-1,2i-1))
+        calv .+= real(getindex.(contributions.(tfr.pars; H=H),2i,2i))
+        histogram!(sp=Np+i, calv, lab =  "$(titles[i]) ($(round(mean(calv); digits = 2)))",
+            bins = bins, seriescolor = 2i-1)
+        exp_cal = real(getindex(contributions(genpars′; H=H),2i-1,2i-1)) +
+                  real(getindex(contributions(genpars′; H=H),2i,2i))
+        vline!(sp=Np+i, [exp_cal], lab="exp: ($(round(exp_cal; digits =2)))", seriescolor = 2i-1)
+    end
+    plot!()
 end
+savefig(joinpath("plots", "Fractions_isobars.pdf"))
 
 
-#Draw Dalitz with each isobar for 1 fit attempt
+# Draw Dalitz with each isobar for 1 fit attempt
 let pars = [0 + 0im , 0.0 , 0.0, 0.0,0.0,0.0]
     l = length(pars)
     plot(layout=grid(3,3,heights=(0.5,0.5,0.5)), size=(1200,1200))
@@ -82,17 +111,17 @@ let pars = [0 + 0im , 0.0 , 0.0, 0.0,0.0,0.0]
             ylab="σ₃ ≡ m²(pK) (GeV)", title = "μ = $label")
         pars =  [0 + 0im , 0.0 , 0.0, 0.0,0.0,0.0]
     end
-    savefig("Dalitz_plot.pdf")
 end
+# savefig("Dalitz_plot.pdf")
 
-#3.) Relative phase between K*_pc and K*_pv
+# 3.) Relative phase between K*_pc and K*_pv
 histogram(relative_phase.(tfr.pars,1,2), 
 bins = range(-2,2, length = 50), title = "Relative phase between K*_pc and K*_pv")
 vline!([ relative_phase(genpars′,1,2) ], lab="expected")
 savefig("Relative_phase.pdf")
 
 
-#4.) Intensity in the PV and PC sectors
+# 4.) Intensity in the PV and PC sectors
 μ(genpars′; H=H)
 let 
     bins = range(0,100, length = 50)
