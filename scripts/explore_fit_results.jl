@@ -13,6 +13,7 @@ using ThreeBodyDecay
 using QuadGK
 using DelimitedFiles
 using PartialWaveFunctions
+using HEPRecipes
 
 using JLD2
 
@@ -36,26 +37,44 @@ data = let Nreduced = Ndata
     [Invariants(tbs.ms,σ1=M[i,1],σ3=M[i,2]) for i in 1:size(M,1)][1:Nreduced]
 end
 genpars = parse_values_from_datafile_name(datafile, Np)
-genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data)) # normalized genpars
-@assert μ(genpars′; H=H) ≈ length(data)
 
 # III. Load fit results
 @load joinpath("data","fit_Ndata=1000_Np=6_Natt=1000_pseudodata.jld2") settings
 H = settings["H_matrix"]
-Optim.minimizer(settings["fit_results"][1])
-let
-    histogram(Optim.minimum.(settings["fit_results"]), bins=100, lab="fits")
-    vline!([ellh(genpars′; data=data,H=H)], lab="generated", l=(3,:black))
-end
-savefig(joinpath("plots","ellh_fits.pdf"))
-
+genpars′ = genpars./sqrt(μ(genpars; H=H)/length(data)) # normalized genpars
+@assert μ(genpars′; H=H) ≈ length(data)
+# 
 tfr = Table(
     [(st = Optim.converged(fr), min = Optim.minimum(fr), pars = Optim.minimizer(fr))
         for fr in settings["fit_results"]])
-print(tfr)
-print(tfr.pars[1])
 
 # IV. Explore fit resuts
+s_mc = flatDalitzPlotSample(tbs.ms; Nev = 10*Ndata)
+mps = [[1,1,0,0,0,0], [0,0,1,1,0,0], [0,0,0,0,1,1], [1,1,1,1,1,1]]
+ws_mc = [intensity.(s_mc; pars=tfr[1].pars .* mp) for mp in mps]
+#
+let Nb = 30
+    plot(layout = grid(1,3), size=(400*3,350), bottom_margin=4Plots.PlotMeasures.mm)
+    lab_isobar = ["K*", "Δ**", "Λ**"]
+    xlab_isobar = ["m²(..)", "m²(..)", "m²(..)"]
+    for k in 1:3
+        bins = range(lims(k,tbs.ms)..., length=Nb)
+        h = weightedHistogram(getindex.(data,k), bins=bins)
+        plot!(sp=k, h, m=(2,:black), lab=(k==1 ? "data" : ""), xlab=xlab_isobar[k])
+        #
+        ws_all = ws_mc[4]
+        ws = ws_all .* (length(data) / sum(ws_all))
+        stephist!(sp=k, getindex.(s_mc, k), weights=ws, bins=bins, lab=(k==1 ? "fit" : ""), lc=:red)
+        for i in 1:3
+            ws_i = ws_mc[i]
+            ws = ws_i .* (length(data) / sum(ws_all))
+            stephist!(sp=k, getindex.(s_mc,k), weights=ws, bins=bins,
+                lab=(k==1 ? lab_isobar[i] : ""), seriescolor=i, fill=0, α=0.3)    
+        end
+    end
+    plot!()
+end
+savefig(joinpath("plots", "fit_curve_on_projections.pdf"))
 
 # 1.) Sanity check
 histogram(μ.(tfr.pars; H = H), bins = range(900,1100,length = 100), title = "Histogram of μ (sanity check)")
