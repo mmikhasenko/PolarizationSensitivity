@@ -13,6 +13,7 @@ intensity(σs, isobars; pars) = sum(abs2, O(σs,
 
 
 #
+const parity_map = [1,0,1,0,1,0]
 μ_pc(pars;H) = μ(pars .* parity_map; H = H)
 μ_pv(pars;H) = μ(pars .* iszero.(parity_map); H = H)
 
